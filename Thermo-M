@@ -1,0 +1,57 @@
+clear
+clc
+
+% Port and channel
+    arduino_port = 'COM4'; % what port the arduino is connected onto
+    baudrate = 9600; % channel of said port
+
+% Open or create a text file
+    text_doc = 'arduino_data.txt'; % creates/write to a text doc
+    text_write = fopen(text_doc, 'w'); % opens doc and allows writing to it
+
+% How many times the loop goes on for
+    n_samples = 1800; % takes 1800 samples
+
+% CreateS the serial port object
+    port_data = serialport(arduino_port, baudrate); % takes in seriel data from the arduino
+
+% Record start time
+    start_time = tic; % starts counting time
+
+% Initialize arrays to store data
+    time_matrix = zeros(n_samples, 1); % creates n by 1 matrix for time capture
+    data_matrix = zeros(n_samples, 1);% same thing for data
+
+% Create plot
+    figure;
+    hPlot = plot(NaN, NaN); % opens an empty plot
+    xlabel('Elapsed Time (s)');
+    ylabel('Data');
+    title('Real-time Data Plot');
+
+% Read data from Arduino and write to text file with elapsed time
+    for n = 1:n_samples
+        % Read data from Arduino
+            data = readline(port_data); % reads the gotten seriel line
+            data = str2double(data); % records it
+        
+        % Get time since the start of the program
+            counted_time = toc(start_time);
+        
+        % Write data to matrix
+            time_matrix(n) = counted_time;
+            data_matrix(n) = data;
+        
+        % Print data in console for easy viewing
+        fprintf('%.2f , %.2f\n', counted_time, data);
+        
+        fprintf(text_write, '%.2f, %s\n', counted_time, data);
+        
+        % Updates plot
+        set(hPlot, 'XData', time_matrix(1:n), 'YData', data_matrix(1:n));
+        drawnow limitrate; % stops rapid writing and draw the grpah in real time
+    end
+
+% Close and wipe
+    fclose(text_write); % closes text doc
+    clear port_data; % clears all recorded data from MATLAB
