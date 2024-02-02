@@ -1,0 +1,29 @@
+// Defining Constants
+  const int thermistor_pin = A0;   // Thermistor
+  const float resistor_10k = 10000;  // Connected Resistor (float since exact value would be nice, not that int wouldnt work)
+  const float A_value = 1.103433342e-3; // Beta value of thermistor (data sheet)
+  const float B_value = 2.138345864e-4;
+  const float C_value = 3.626459564e-7;
+
+
+
+void setup() {
+  Serial.begin(9600); // turns on serial communication
+}
+
+void loop() {
+  // Analog read
+    int raw_signal = analogRead(thermistor_pin);
+
+  // Convert the raw signal to resistance
+    float resistance = resistor_10k / ((1023.0 / raw_signal) - 1.0); //(float important since this is a decimal thats weird)
+
+  // Calculates the temperature in Celsius using the Steinhart-Hart equation
+    float temp_ln = log(resistance);
+    float temperature = 1 / (A_value + B_value*log(resistance) + C_value*pow(temp_ln,3)) - 273.15;
+
+  // Print the temperature to the serial monitor
+    Serial.println(temperature); // print in serial and take new line
+
+  delay(4000); // Wait for 4 seconds before reading again
+}
